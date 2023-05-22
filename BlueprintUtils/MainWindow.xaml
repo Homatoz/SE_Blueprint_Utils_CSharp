@@ -1,0 +1,30 @@
+﻿<Window x:Class="BlueprintUtils.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BlueprintUtils"
+        mc:Ignorable="d"
+        Title="Sandbox2Blueprints" Width="400" ResizeMode="NoResize" SizeToContent="Height" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <TextBlock Text="Настройки" Background="DarkGray" TextAlignment="Center"/>
+            <CheckBox Content="Удалять информацию об изначальном владении объектом?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding ClearOwner}"/>
+            <CheckBox Content="Создавать чертежи объединенных объектов?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding CreateMultiGrid}"/>
+            <CheckBox Content="Удалять деформации объектов?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding RemoveDeformation}"/>
+            <CheckBox Content="Удалять автоматическое поведение?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding RemoveAI}"/>
+            <CheckBox Content="Извлекать чертежи из проектора?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding ExtractProjectorBP}"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="Действия" Background="DarkGray" TextAlignment="Center"/>
+            <Button Content="Обработать файл мира в папке с программой"/>
+            <Button Content="Выбрать файл мира для обработки"/>
+            <Button Content="Выбрать папку для обработки файлов мира во вложенных папках"/>
+
+        </StackPanel>
+    </Grid>
+</Window>
