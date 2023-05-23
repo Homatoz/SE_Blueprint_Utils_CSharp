@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:BlueprintUtils"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <local:Settings x:Key="Settings" />
     </Application.Resources>
 </Application>

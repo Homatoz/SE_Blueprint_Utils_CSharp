@@ -13,11 +13,11 @@
         </Grid.RowDefinitions>
         <StackPanel>
             <TextBlock Text="Настройки" Background="DarkGray" TextAlignment="Center"/>
-            <CheckBox Content="Удалять информацию об изначальном владении объектом?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding ClearOwner}"/>
-            <CheckBox Content="Создавать чертежи объединенных объектов?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding CreateMultiGrid}"/>
-            <CheckBox Content="Удалять деформации объектов?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding RemoveDeformation}"/>
-            <CheckBox Content="Удалять автоматическое поведение?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding RemoveAI}"/>
-            <CheckBox Content="Извлекать чертежи из проектора?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding ExtractProjectorBP}"/>
+            <CheckBox Content="Удалять информацию об изначальном владении объектом?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding ClearOwner, Source={StaticResource Settings}, Mode=TwoWay}"/>
+            <CheckBox Content="Создавать чертежи объединенных объектов?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding CreateMultiGrid, Source={StaticResource Settings}, Mode=TwoWay}"/>
+            <CheckBox Content="Удалять деформации объектов?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding RemoveDeformation, Source={StaticResource Settings}, Mode=TwoWay}"/>
+            <CheckBox Content="Удалять автоматическое поведение?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding RemoveAI, Source={StaticResource Settings}, Mode=TwoWay}"/>
+            <CheckBox Content="Извлекать чертежи из проектора?" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="{Binding ExtractProjectorBP, Source={StaticResource Settings}, Mode=TwoWay}"/>
         </StackPanel>
         <StackPanel Grid.Row="1">
             <TextBlock Text="Действия" Background="DarkGray" TextAlignment="Center"/>
