@@ -23,7 +23,6 @@ namespace BlueprintUtils
     {
         public MainWindow()
         {
-            Settings.SetDefault();
             InitializeComponent();
         }
     }

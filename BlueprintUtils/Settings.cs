@@ -14,6 +14,11 @@ namespace BlueprintUtils
         public static bool RemoveAI { get; set; }           //Удалять автоматическое поведение?
         public static bool ExtractProjectorBP { get; set; } //Извлекать чертежи из проектора?
 
+        static Settings()
+        {
+            SetDefault();
+        }
+
         public static void SetDefault()
         {
             ClearOwner = false;
