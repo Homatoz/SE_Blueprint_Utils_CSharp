@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,12 @@ namespace BlueprintUtils
         public MainWindow()
         {
             InitializeComponent();
+            btnCurrent.IsEnabled = File.Exists(Environment.CurrentDirectory + @"\SANDBOX_0_0_0_.sbs");
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Converter converter = new Converter((sender as Button).Name.Replace("btn",""));
         }
     }
 }

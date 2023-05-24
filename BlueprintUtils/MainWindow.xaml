@@ -21,9 +21,9 @@
         </StackPanel>
         <StackPanel Grid.Row="1">
             <TextBlock Text="Действия" Background="DarkGray" TextAlignment="Center"/>
-            <Button Content="Обработать файл мира в папке с программой"/>
-            <Button Content="Выбрать файл мира для обработки"/>
-            <Button Content="Выбрать папку для обработки файлов мира во вложенных папках"/>
+            <Button x:Name="btnCurrent" Content="Обработать файл мира в папке с программой" Click="Button_Click"/>
+            <Button x:Name="btnSingle" Content="Выбрать файл мира для обработки" Click="Button_Click"/>
+            <Button x:Name="btnMulti" Content="Выбрать папку для обработки файлов мира во вложенных папках" Click="Button_Click"/>
 
         </StackPanel>
     </Grid>
