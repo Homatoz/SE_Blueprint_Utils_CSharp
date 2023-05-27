@@ -3,6 +3,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Xml;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BlueprintUtils {
     /// <summary>
@@ -47,7 +49,7 @@ namespace BlueprintUtils {
             FolderBrowserSave.Description = "Выберите папку для сохранения чертежей";
             FolderBrowserSave.UseDescriptionForTitle = true;
         }
-        
+
         public Converter(string Type) {
             ConvertType = Type;
             InitializeComponent();
@@ -134,7 +136,7 @@ namespace BlueprintUtils {
                 XMLExtracted.Load(file);
                 //Получаем название для чертежа из DisplayName
                 string DisplayName = XMLExtracted.SelectSingleNode("*/DisplayName").InnerText;
-                DisplayName = Regex.Replace(DisplayName, "[\"?]", "_");
+                DisplayName = Regex.Replace(DisplayName, "[\"?]", "_");         //Заменяем символы, которые не подходят для имени файла
                 //Создаем чертеж
                 XMLSave.LoadXml(BPTemplate);
                 XmlNode CubeGridsNode = XMLSave.SelectSingleNode("//CubeGrids");
@@ -157,6 +159,129 @@ namespace BlueprintUtils {
                 }
             }
             Logging("");
+
+            //Обработка связанных объектов
+            if (Settings.CreateMultiGrid) {
+                string MultiList = "";
+                Logging("Начинается проверка связей");
+                //Создаем списки для хранения связей объектов
+                List<Tuple<string, string>> Links = new();
+                List<Tuple<string, string>> LinkedEntities = new();
+                List<Tuple<string, string>> Entities = new();
+                List<Tuple<string, string>> TempFileList = new();
+                //Собираем все строки, содержащие строки с ID для связываемых объектов, а также ID всех объектов
+                foreach (string file in ExtractedFiles) {
+                    string FileName = Path.GetFileName(file);
+                    XMLExtracted.Load(file);
+                    XmlNodeList LinkedEntityNodes = XMLExtracted.SelectNodes("//ParentEntityId | //TopBlockId");
+                    foreach (XmlNode node in LinkedEntityNodes) {
+                        string EntityId = node.InnerText;
+                        if (EntityId != "0") {
+                            LinkedEntities.Add(Tuple.Create(EntityId, FileName));
+                        }
+                    }
+                }
+                foreach (string file in ExtractedFiles) {
+                    string FileName = Path.GetFileName(file);
+                    XMLExtracted.Load(file);
+                    XmlNodeList LinkedEntityNodes = XMLExtracted.SelectNodes("//EntityId");
+                    foreach (XmlNode node in LinkedEntityNodes) {
+                        string EntityId = node.InnerText;
+                        Entities.Add(Tuple.Create(EntityId, FileName));
+                    }
+                }
+                //Собираем связи между файлами, на основании которых они будут собираться в единый файл чертежа
+                Links = (from le in LinkedEntities
+                         join e in Entities
+                         on le.Item1
+                         equals e.Item1
+                         select new Tuple<string, string>(le.Item2, e.Item2)).ToList();
+
+                Logging("Проверка связей завершена");
+                Logging("");
+
+                //Создаем мультиобъекты, пока список связей не опустеет
+                Logging("Создание мультиобъектов");
+                while (Links.Count > 0) {
+                    //Начиная с первой доступной записи начинаем пополнять список связанных файлов, удаляя обработанные записи
+                    List<string> CubeGridFileList = new List<string> { Links[0].Item1 };
+                    int LinksIn = 0;
+                    int LinksOut = 0;
+                    do {
+                        TempFileList = (from l in Links
+                                        join cgfl in CubeGridFileList
+                                        on l.Item1
+                                        equals cgfl
+                                        select new Tuple<string, string>(l.Item1, l.Item2)).ToList();
+                        foreach (var temp in TempFileList) {
+                            Links.Remove(temp);
+                        }
+                        foreach (var item in TempFileList) {
+                            CubeGridFileList.Add(item.Item2);
+                        }
+                        LinksIn = TempFileList.Count;
+
+                        TempFileList = (from l in Links
+                                        join cgfl in CubeGridFileList
+                                        on l.Item2
+                                        equals cgfl
+                                        select new Tuple<string, string>(l.Item1, l.Item2)).ToList();
+                        foreach (var temp in TempFileList) {
+                            Links.Remove(temp);
+                        }
+                        foreach (var item in TempFileList) {
+                            CubeGridFileList.Add(item.Item1);
+                        }
+                        LinksOut = TempFileList.Count;
+                    } while (LinksIn != 0 && LinksOut != 0);
+                    //Сортируем и очищаем полученный список от дублей
+                    CubeGridFileList.Sort();
+                    CubeGridFileList = CubeGridFileList.Distinct().ToList();
+                    //Инициализируем переменные для поиска самого большого объекта
+                    int CountCubeBlocks = 0;
+                    string MaxCubeBlockFile = "";
+                    string DisplayName = "";
+                    //Создаем чертеж
+                    XMLSave.LoadXml(BPTemplate);
+                    XmlNode CubeGridsNode = XMLSave.SelectSingleNode("//CubeGrids");
+                    //Добавляем все объекты из полученного списка
+                    foreach (string CubeGridFile2 in CubeGridFileList) {
+                        XMLExtracted.Load(PathToExtracted + CubeGridFile2);
+                        XmlNodeList CubeBlocks = XMLExtracted.SelectNodes("*/CubeBlocks/MyObjectBuilder_CubeBlock");
+                        //Ищем самый большой (в блоках) объект и берем его имя для чертежа
+                        if (CountCubeBlocks < CubeBlocks.Count) {
+                            CountCubeBlocks = CubeBlocks.Count;
+                            MaxCubeBlockFile = CubeGridFile2;
+                            DisplayName = XMLExtracted.SelectSingleNode("*/DisplayName").InnerText;
+                        }
+                        XmlElement CubeGridNewNode = XMLSave.CreateElement("CubeGrid");
+                        CubeGridsNode.AppendChild(CubeGridNewNode);
+                        CubeGridNewNode.InnerXml = XMLExtracted.FirstChild.InnerXml;
+                    }
+                    DisplayName = Regex.Replace(DisplayName, "[\"?]", "_") + " Multi";  //Заменяем символы, которые не подходят для имени файла
+                    (XMLSave.SelectSingleNode("//Id[@Type=\"MyObjectBuilder_ShipBlueprintDefinition\"]") as XmlElement).SetAttribute("Subtype", DisplayName);
+                    //Создаем папку чертежа и сохраняем в нее чертеж
+                    string MultiName = MaxCubeBlockFile + "_" + DisplayName;
+                    string Path = BPPath + @"\" + MultiName;
+                    string BPFile = Path + @"\bp.sbc";
+                    Directory.CreateDirectory(Path);
+                    XMLSave.Save(BPFile);
+                    //Выводим название чертежа и, при наличии тега AutomaticBehaviour, предупреждаем
+                    XmlNode AutomaticBehaviour = XMLSave.SelectSingleNode("//AutomaticBehaviour");
+                    if (AutomaticBehaviour != null) {
+                        Logging(DisplayName + " (присутствует AutomaticBehaviour)");
+                    }
+                    else {
+                        Logging(DisplayName);
+                    }
+                    MultiList = MultiList + MultiName + " - " + String.Join(" ", CubeGridFileList) + "\r\n";
+                }
+                File.WriteAllText(BPPath + @"\MultiList.txt", MultiList);
+            }
+            Logging("");
+
+            //Удаляем временные файлы
+            Directory.Delete(PathToExtracted, true);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {

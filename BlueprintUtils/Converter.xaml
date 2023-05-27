@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Converter" Height="800" Width="500" ResizeMode="NoResize" Loaded="Window_Loaded" Initialized="Window_Initialized">
     <Grid>
-        <TextBlock x:Name="tbLog"/>
+        <TextBox x:Name="tbLog" VerticalScrollBarVisibility="Auto"/>
 
     </Grid>
 </Window>
