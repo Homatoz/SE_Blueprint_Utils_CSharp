@@ -309,6 +309,7 @@ namespace BlueprintUtils {
                         }
                         break;
                 }
+                Logging("Обработка завершена");
             });
         }
 
@@ -368,6 +369,10 @@ namespace BlueprintUtils {
         public void OnPropertyChanged([CallerMemberName] string prop = "") {
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(prop));
+        }
+
+        private void tbLog_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) {
+            tbLog.ScrollToEnd();
         }
     }
 }

@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BlueprintUtils"
         mc:Ignorable="d"
-        Title="Converter" Height="800" Width="500" ResizeMode="NoResize" Loaded="Window_Loaded" Initialized="Window_Initialized">
+        Title="Converter Log" Height="800" Width="500" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Loaded="Window_Loaded" Initialized="Window_Initialized">
     <Grid>
-        <TextBox x:Name="tbLog"  Text="{Binding LogText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" VerticalScrollBarVisibility="Auto"/>
+        <TextBox x:Name="tbLog" Text="{Binding LogText, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" VerticalScrollBarVisibility="Auto" TextChanged="tbLog_TextChanged"/>
     </Grid>
 </Window>
