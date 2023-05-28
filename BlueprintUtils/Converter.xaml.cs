@@ -237,7 +237,7 @@ namespace BlueprintUtils {
                             CubeGridFileList.Add(item.Item1);
                         }
                         LinksOut = TempFileList.Count;
-                    } while (LinksIn != 0 && LinksOut != 0);
+                    } while (LinksIn != 0 || LinksOut != 0);
                     //Сортируем и очищаем полученный список от дублей
                     CubeGridFileList.Sort();
                     CubeGridFileList = CubeGridFileList.Distinct().ToList();
