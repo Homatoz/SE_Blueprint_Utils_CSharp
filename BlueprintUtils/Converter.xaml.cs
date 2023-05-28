@@ -5,12 +5,15 @@ using System.Windows;
 using System.Xml;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace BlueprintUtils {
     /// <summary>
     /// Логика взаимодействия для Converter.xaml
     /// </summary>
-    public partial class Converter : Window {
+    public partial class Converter : Window, INotifyPropertyChanged {
         static readonly System.Windows.Forms.OpenFileDialog FileBrowser = new();
         static readonly System.Windows.Forms.FolderBrowserDialog FolderBrowserRead = new();
         static readonly System.Windows.Forms.FolderBrowserDialog FolderBrowserSave = new();
@@ -52,11 +55,12 @@ namespace BlueprintUtils {
 
         public Converter(string Type) {
             ConvertType = Type;
+            this.DataContext = this;
             InitializeComponent();
         }
 
         private void Logging(string message) {
-            tbLog.Text = tbLog.Text + message + "\n";
+            LogText = LogText + message + "\n";
         }
 
         //Функция для удаления всякого трэша
@@ -276,7 +280,9 @@ namespace BlueprintUtils {
                     }
                     MultiList = MultiList + MultiName + " - " + String.Join(" ", CubeGridFileList) + "\r\n";
                 }
-                File.WriteAllText(BPPath + @"\MultiList.txt", MultiList);
+                if (MultiList != "") {
+                    File.WriteAllText(BPPath + @"\MultiList.txt", MultiList);
+                }
             }
             Logging("");
 
@@ -285,23 +291,25 @@ namespace BlueprintUtils {
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
-            switch (ConvertType) {
-                case "Current":
-                    ExtractGrid(Environment.CurrentDirectory + @"\SANDBOX_0_0_0_.sbs", Environment.CurrentDirectory);
-                    break;
-                case "Single":
-                    ExtractGrid(FileBrowser.FileName, FolderBrowserSave.SelectedPath);
-                    break;
-                case "Multi":
-                    string ReadPath = FolderBrowserRead.SelectedPath;
-                    string SavePath = FolderBrowserSave.SelectedPath;
-                    string[] SandboxAllFiles = Directory.GetFiles(ReadPath, "SANDBOX_0_0_0_.sbs", SearchOption.AllDirectories);
-                    foreach (string SandboxFile in SandboxAllFiles) {
-                        string BPSavePath = Directory.GetParent(SandboxFile).FullName.Replace(ReadPath, SavePath);
-                        ExtractGrid(SandboxFile, BPSavePath);
-                    }
-                    break;
-            }
+            Task.Factory.StartNew(() => {       //Без этой хренотени не обновляется лог в рилтайме
+                switch (ConvertType) {
+                    case "Current":
+                        ExtractGrid(Environment.CurrentDirectory + @"\SANDBOX_0_0_0_.sbs", Environment.CurrentDirectory);
+                        break;
+                    case "Single":
+                        ExtractGrid(FileBrowser.FileName, FolderBrowserSave.SelectedPath);
+                        break;
+                    case "Multi":
+                        string ReadPath = FolderBrowserRead.SelectedPath;
+                        string SavePath = FolderBrowserSave.SelectedPath;
+                        string[] SandboxAllFiles = Directory.GetFiles(ReadPath, "SANDBOX_0_0_0_.sbs", SearchOption.AllDirectories);
+                        foreach (string SandboxFile in SandboxAllFiles) {
+                            string BPSavePath = Directory.GetParent(SandboxFile).FullName.Replace(ReadPath, SavePath);
+                            ExtractGrid(SandboxFile, BPSavePath);
+                        }
+                        break;
+                }
+            });
         }
 
         private void Window_Initialized(object sender, EventArgs e) {
@@ -345,6 +353,21 @@ namespace BlueprintUtils {
                     }
                     break;
             }
+        }
+
+        private string _LogText;
+        public string LogText {
+            get { return _LogText; }
+            set {
+                _LogText = value;
+                OnPropertyChanged("LogText");
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged([CallerMemberName] string prop = "") {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(prop));
         }
     }
 }
